@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.2.0 (99f88ef)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: config-server
+  name: config-server
+spec:
+  ports:
+  - name: "8888"
+    port: 8888
+    targetPort: 8888
+  selector:
+    io.kompose.service: config-server
+status:
+  loadBalancer: {}
