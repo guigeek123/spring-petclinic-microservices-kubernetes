@@ -80,6 +80,14 @@
         </plugins>
     </build>
 
+    <!-- Set up Nexus repository to deploy releases-->
+    <distributionManagement>
+        <repository>
+            <id>internal-snapshots-repository</id>
+            <url>http://nexus-direct:8081/repository/maven-snapshots/</url>
+        </repository>
+    </distributionManagement>
+
     <!-- <repositories>
         <repository>
             <id>spring-milestones</id>
