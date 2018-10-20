@@ -117,7 +117,18 @@ spec:
                 container('python3') {
                     sh("sed -i.bak 's#ARTIFACT#${artifactName}#' ./Dockerfile")
                     sh("sed -i.bak 's#PORT#${appPort}#' ./Dockerfile")
-                    //sh("cat ./Dockerfile")
+
+                    if (${appName} == "config-server") {
+                        sh("sed -i.bak 's/ENTRYPOINT/#/g' ./Dockerfile")
+                        sh("sed -i.bak 's/#CONFIG_SERVER/ENTRYPOINT/g' ./Dockerfile")
+                    }
+
+                    if (${appName} == "discovery-server") {
+                        sh("sed -i.bak 's/ENTRYPOINT/#/g' ./Dockerfile")
+                        sh("sed -i.bak 's/#DISCOVERY_SERVER/ENTRYPOINT/g' ./Dockerfile")
+                    }
+
+                    sh("cat ./Dockerfile")
 
                 }
 
