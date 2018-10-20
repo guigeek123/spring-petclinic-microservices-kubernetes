@@ -113,11 +113,24 @@ spec:
                     sh 'chown 770 -R pipeline-tools'
                 }
 
-                // Customize Dockerfile for current microservices
+                // Customize deployments files for current microservice
                 container('python3') {
                     sh("sed -i.bak 's#ARTIFACT#${artifactName}#' ./Dockerfile")
                     sh("sed -i.bak 's#PORT#${appPort}#' ./Dockerfile")
-                    sh("cat ./Dockerfile")
+                    //sh("cat ./Dockerfile")
+
+                    //Get node internal ip to access nexus docker registry exposed as nodePort (nexus-direct-nodeport.yaml) and replace it yaml file
+                    sh 'sed -i.bak \"s#NODEIP#$(kubectl get nodes -o jsonpath="{.items[1].status.addresses[?(@.type==\\"InternalIP\\")].address}")#\" ./k8s/*.yaml'
+                    //Write the image to be deployed in the yaml deployment file
+                    sh("sed -i.bak 's#CONTAINERNAME#${imageTag}#' ./k8s/*.yaml")
+                    //Personalizes the deployment file with application name
+                    sh("sed -i.bak 's#appName#${appName}#' ./k8s/*.yaml")
+                    sh("sed -i.bak 's#projectName#${project}#' ./k8s/*.yaml")
+                    sh("sed -i.bak 's#appPort#${appPort}#' ./k8s/*.yaml")
+
+                    sh("cat k8s/deployment.yaml")
+                    sh("cat k8s/service.yaml")
+
                 }
 
                 container('kubectl') {
@@ -188,9 +201,7 @@ spec:
                 container(name: 'kaniko', shell: '/busybox/sh') {
                     withEnv(['PATH+EXTRA=/busybox']) {
                         sh """#!/busybox/sh
-                            /kaniko/executor --dockerfile=Dockerfile -c `pwd` --destination=nexus-direct:8083/${
-                            imageTag
-                        } --insecure
+                            /kaniko/executor --dockerfile=Dockerfile -c `pwd` --destination=nexus-direct:8083/${imageTag} --insecure
                         """
                     }
                 }
@@ -354,17 +365,9 @@ spec:
             steps {
                 container('kubectl') {
                     // Create namespace if it doesn't exist
-                    sh("kubectl get ns Dev || kubectl create ns Dev")
-                    //Get node internal ip to access nexus docker registry exposed as nodePort (nexus-direct-nodeport.yaml) and replace it yaml file
-                    sh 'sed -i.bak \"s#NODEIP#$(kubectl get nodes -o jsonpath="{.items[1].status.addresses[?(@.type==\\"InternalIP\\")].address}")#\" ./k8s/production/*.yaml'
-                    //Write the image to be deployed in the yaml deployment file
-                    sh("sed -i.bak 's#CONTAINERNAME#${imageTag}#' ./k8s/production/*.yaml")
-                    //Personalizes the deployment file with application name
-                    sh("sed -i.bak 's#appName#${appName}#' ./k8s/production/*.yaml")
-                    sh("sed -i.bak 's#appName#${appName}#' ./k8s/services/frontend.yaml")
+                    sh("kubectl get ns development || kubectl create ns development")
                     //Deploy application
-                    sh("kubectl --namespace=Dev apply -f k8s/services/frontend.yaml")
-                    sh("kubectl --namespace=Dev apply -f k8s/production/")
+                    sh("kubectl --namespace=development apply -f k8s/")
                     //Display access
                     // TODO : put back LoadBalancer deployment, and add a timer to wait for IP attribution
                     //sh("echo http://`kubectl --namespace=production get service/${feSvcName} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'` > ${feSvcName}")
