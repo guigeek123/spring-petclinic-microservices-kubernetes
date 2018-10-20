@@ -115,7 +115,7 @@ spec:
 
                 // Customize Dockerfile for current microservices
                 container('python3') {
-                    sh("sed -i.bak 's#ARTIFCAT#${artifactName}#' ./Dockerfile")
+                    sh("sed -i.bak 's#ARTIFCAT#target/${artifactName}#' ./Dockerfile")
                     sh("sed -i.bak 's#PORT#${appPort}#' ./Dockerfile")
                     sh("cat ./Dockerfile")
                 }
