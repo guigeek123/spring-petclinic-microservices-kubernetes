@@ -119,12 +119,12 @@ spec:
                     sh("sed -i.bak 's#PORT#${appPort}#' ./Dockerfile")
 
                     script {
-                        if (${appName} == 'config-server') {
+                        if ("${appName}" == 'config-server') {
                             sh("sed -i.bak 's/ENTRYPOINT/#/g' ./Dockerfile")
                             sh("sed -i.bak 's/#CONFIG_SERVER/ENTRYPOINT/g' ./Dockerfile")
                         }
 
-                        if (${appName} == 'discovery-server') {
+                        if ("${appName}" == 'discovery-server') {
                             sh("sed -i.bak 's/ENTRYPOINT/#/g' ./Dockerfile")
                             sh("sed -i.bak 's/#DISCOVERY_SERVER/ENTRYPOINT/g' ./Dockerfile")
                         }
