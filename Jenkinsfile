@@ -113,11 +113,17 @@ spec:
                     sh 'chown 770 -R pipeline-tools'
                 }
 
-                // Customize deployments files for current microservice
+                // Customize dockerfile for current microservice
                 container('python3') {
                     sh("sed -i.bak 's#ARTIFACT#${artifactName}#' ./Dockerfile")
                     sh("sed -i.bak 's#PORT#${appPort}#' ./Dockerfile")
                     //sh("cat ./Dockerfile")
+
+                }
+
+                container('kubectl') {
+
+                    // Customize deployments files for current microservice
 
                     //Get node internal ip to access nexus docker registry exposed as nodePort (nexus-direct-nodeport.yaml) and replace it yaml file
                     sh 'sed -i.bak \"s#NODEIP#$(kubectl get nodes -o jsonpath="{.items[1].status.addresses[?(@.type==\\"InternalIP\\")].address}")#\" ./k8s/*.yaml'
@@ -131,9 +137,6 @@ spec:
                     sh("cat k8s/deployment.yaml")
                     sh("cat k8s/service.yaml")
 
-                }
-
-                container('kubectl') {
                     //Manage Nexus secret
                     // SECURITY WARNING : password displayed in jenkins Logs
                     sh 'sed -i.bak \"s#NEXUSLOGIN#$(kubectl get secret nexus-admin-pass -o jsonpath="{.data.username}" | base64 --decode)#\" pipeline-tools/maven/maven-custom-settings'
