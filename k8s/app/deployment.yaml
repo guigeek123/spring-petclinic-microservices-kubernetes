@@ -16,5 +16,5 @@ spec:
         image: NODEIP:30083/CONTAINERNAME
         imagePullPolicy: Always
         ports:
-        - name: appName
+        - name: http
           containerPort: appPort

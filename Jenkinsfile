@@ -2,6 +2,7 @@ def project = 'petclinic-microservice'
 def appName = 'config-server'
 def appPort = 8888
 def artifactName = 'config-server-2.0.6.BUILD-SNAPSHOT.jar'
+def testingdns = ''
 def  imageTag = "${appName}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
 //def tempBucket = "${project}-${appName}-${env.BUILD_NUMBER}"
 
@@ -154,6 +155,19 @@ spec:
                     sh("sed -i.bak 's#projectName#${project}#' ./k8s/test/*.yaml")
                     sh("sed -i.bak 's#appPort#${appPort}#' ./k8s/app/*.yaml")
                     sh("sed -i.bak 's#appPort#${appPort}#' ./k8s/test/*.yaml")
+                    /*script {
+                        if ("${env.BRANCH_NAME}".contains('acceptance')) {
+                            sh("sed -i.bak 's#appName#${appName}-a#' ./k8s/test/*.yaml")
+                            testingdns = ${appName}-a
+                        }
+
+                        if ("${env.BRANCH_NAME}".contains('production')) {
+                            sh("sed -i.bak 's#appName#${appName}-p#' ./k8s/test/*.yaml")
+                            testingdns = ${appName}-a
+                        }
+                    }*/
+
+
 
                     sh("cat k8s/app/deployment.yaml")
                     sh("cat k8s/app/service.yaml")
@@ -175,7 +189,7 @@ spec:
             when {
                 anyOf {
                     branch '*-acceptance';
-                    branch '*-master'
+                    branch '*-production'
                 }
             }
 
@@ -242,7 +256,7 @@ spec:
             when {
                 anyOf {
                     branch '*-acceptance';
-                    branch '*-master'
+                    branch '*-production'
                 }
             }
 
@@ -278,7 +292,7 @@ spec:
             when {
                 anyOf {
                     branch '*-acceptance';
-                    branch '*-master'
+                    branch '*-production'
                 }
             }
 
@@ -335,7 +349,7 @@ spec:
             when {
                 anyOf {
                     branch '*-acceptance';
-                    branch '*-master'
+                    branch '*-production'
                 }
             }
             steps {
@@ -362,7 +376,7 @@ spec:
                 not {
                     anyOf {
                         branch '*-acceptance';
-                        branch '*-master'
+                        branch '*-production'
                     }
                 }
             }
@@ -425,7 +439,7 @@ spec:
 
         stage('Security Gate') {
 
-            when { branch '*-master' }
+            when { branch '*-production' }
 
             steps{
                 container('python3') {
@@ -442,7 +456,7 @@ spec:
 
         stage('Deploy to Production') {
 
-            when { branch '*-master'}
+            when { branch '*-production'}
 
             //TODO : create a SECURITY GATE script
 
