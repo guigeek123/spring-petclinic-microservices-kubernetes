@@ -130,7 +130,7 @@ spec:
                         }
                     }
 
-                    sh("cat ./Dockerfile")
+                    //sh("cat ./Dockerfile")
 
                 }
 
@@ -138,17 +138,24 @@ spec:
 
                     // Customize deployments files for current microservice
 
+                    // Create dedicated deployment yaml for testing
+                    sh 'cp ./k8s/app/* k8s/test/'
+
                     //Get node internal ip to access nexus docker registry exposed as nodePort (nexus-direct-nodeport.yaml) and replace it yaml file
                     sh 'sed -i.bak \"s#NODEIP#$(kubectl get nodes -o jsonpath="{.items[1].status.addresses[?(@.type==\\"InternalIP\\")].address}")#\" ./k8s/*.yaml'
                     //Write the image to be deployed in the yaml deployment file
                     sh("sed -i.bak 's#CONTAINERNAME#${imageTag}#' ./k8s/*.yaml")
                     //Personalizes the deployment file with application name
-                    sh("sed -i.bak 's#appName#${appName}#' ./k8s/*.yaml")
+                    sh("sed -i.bak 's#appName#${appName}#' ./k8s/app/*.yaml")
+                    sh("sed -i.bak 's#appName#${appName}-${env.BRANCH_NAME}#' ./k8s/test/*.yaml")
                     sh("sed -i.bak 's#projectName#${project}#' ./k8s/*.yaml")
                     sh("sed -i.bak 's#appPort#${appPort}#' ./k8s/*.yaml")
 
-                    sh("cat k8s/deployment.yaml")
-                    sh("cat k8s/service.yaml")
+                    sh("cat k8s/app/deployment.yaml")
+                    sh("cat k8s/app/service.yaml")
+                    sh("cat k8s/test/deployment.yaml")
+                    sh("cat k8s/test/service.yaml")
+                    sh("cat k8s/test/internamespace-service.yaml")
 
                     //Manage Nexus secret
                     // SECURITY WARNING : password displayed in jenkins Logs
@@ -273,27 +280,15 @@ spec:
 
             steps {
                 container('kubectl') {
-                    // Create dedicated deployment yaml for testing in order not to be confused later with deployment in production
-                    sh 'mkdir ./k8s/testing/'
-                    sh 'cp ./k8s/production/frontend.yaml k8s/testing/'
-                    sh 'cp ./k8s/services/frontend.yaml k8s/testing/frontend-service.yaml'
-
-                    //Get node internal ip to access nexus docker registry exposed as nodePort (nexus-direct-nodeport.yaml) and replace it yaml file
-                    sh 'sed -i.bak \"s#NODEIP#$(kubectl get nodes -o jsonpath="{.items[1].status.addresses[?(@.type==\\"InternalIP\\")].address}")#\" ./k8s/testing/frontend.yaml'
-                    //Write the image to be deployed in the yaml deployment file
-                    sh("sed -i.bak 's#CONTAINERNAME#${imageTag}#' ./k8s/testing/frontend.yaml")
-                    //Personalizes the deployment file with application name
-                    sh("sed -i.bak 's#appName#${appName}-${env.BRANCH_NAME}#' ./k8s/testing/*.yaml")
                     // Deploy to testing namespace, with the docker image created before
-                    sh 'kubectl apply -f ./k8s/testing/frontend.yaml --namespace=testing'
-                    sh 'kubectl apply -f ./k8s/testing/frontend-service.yaml --namespace=testing'
+                    sh 'kubectl apply -f ./k8s/test/deployment.yaml --namespace=testing'
+                    sh 'kubectl apply -f ./k8s/test/service.yaml --namespace=testing'
 
                     // Deploy an "internamespace service" to make the testing app accessible from the default namespace where zap is running
-                    sh("sed -i.bak 's#appName#${appName}-${env.BRANCH_NAME}#' ./k8s/services/internamespace-frontend.yaml")
-                    sh 'kubectl apply -f ./k8s/services/internamespace-frontend.yaml'
+                    sh 'kubectl apply -f ./k8s/test/internamespace-service.yaml'
                 }
 
-                // Execute scan and analyse results
+                // Execute scan
 
                 container('zap') {
                     sh("pip install python-owasp-zap-v2.4")
@@ -303,13 +298,11 @@ spec:
                     //TODO : configure scanners
                     script {
                         try {
-                            sh("zap-cli quick-scan -o '-config api.disablekey=true' -l Low --spider -r http://${appName}-${env.BRANCH_NAME}-frontend-defaultns/")
+                            sh("zap-cli quick-scan -o '-config api.disablekey=true' -l Low --spider -r http://${appName}-${env.BRANCH_NAME}-defaultns:${appPort}/")
                         } catch (all) {
-                            //scripts gives error if any findings
-                            // for later : break the build in case of high in master branch (e.g. when building release)
+                            //scripts gives error if any findings. Errors are not managed here.
                         }
                     }
-
 
                     sh("zap-cli report -f xml -o zap-results.xml")
                     sh("zap-cli report -f html -o pipeline-tools/zap/scripts/results.html")
@@ -322,21 +315,13 @@ spec:
                     sh "mkdir reports/zap && cp zap-results.xml reports/zap/"
 
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'pipeline-tools/zap/scripts/', reportFiles: 'results.html', reportName: 'ZAP full report', reportTitles: ''])
-
-                    // Behave must use json report format...
-                    //try{
-                    // Analysing results using behave
-                    //    sh 'cd pipeline-tools/zap/scripts/ && behave'
-                    //} catch(all) {
-
-                    //}
                 }
 
                 // Destroy app from testing namespace
                 container('kubectl') {
-                    sh "kubectl delete service ${appName}-${env.BRANCH_NAME}-frontend-defaultns"
-                    sh "kubectl delete deployment ${appName}-${env.BRANCH_NAME}-frontend-deployment --namespace=testing"
-                    sh "kubectl delete service ${appName}-${env.BRANCH_NAME}-frontend --namespace=testing"
+                    sh "kubectl delete service ${appName}-${env.BRANCH_NAME}-defaultns"
+                    sh "kubectl delete deployment ${appName}-${env.BRANCH_NAME} --namespace=testing"
+                    sh "kubectl delete service ${appName}-${env.BRANCH_NAME} --namespace=testing"
                 }
             }
         }
@@ -383,10 +368,7 @@ spec:
                     // Create namespace if it doesn't exist
                     sh("kubectl get ns development || kubectl create ns development")
                     //Deploy application
-                    sh("kubectl --namespace=development apply -f k8s/")
-                    //Display access
-                    // TODO : put back LoadBalancer deployment, and add a timer to wait for IP attribution
-                    //sh("echo http://`kubectl --namespace=production get service/${feSvcName} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'` > ${feSvcName}")
+                    sh("kubectl --namespace=development apply -f k8s/app/")
                 }
             }
         }

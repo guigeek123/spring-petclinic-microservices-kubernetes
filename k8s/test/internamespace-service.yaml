@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: appName-defaultns
+  namespace: default
+spec:
+  type: ExternalName
+  externalName: appName.testing.svc.cluster.local
+  ports:
+  - name: http
+    port: appPort
+    protocol: TCP
+  selector:
+    app: projectName
+    role: appName

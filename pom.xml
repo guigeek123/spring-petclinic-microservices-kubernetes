@@ -74,11 +74,51 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <format>ALL</format>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>${ddCheckActivated}</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>Default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <ddCheckActivated>none</ddCheckActivated>
+            </properties>
+        </profile>
+        <profile>
+            <id>dependencyCheck</id>
+            <activation>
+                <property>
+                    <name>ddcheck</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <ddCheckActivated>package</ddCheckActivated>
+            </properties>
+        </profile>
+    </profiles>
 
     <!-- Set up Nexus repository to deploy releases-->
     <distributionManagement>
