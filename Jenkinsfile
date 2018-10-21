@@ -1,7 +1,7 @@
 def project = 'petclinic-microservice'
-def appName = 'config-server'
-def appPort = 8888
-def artifactName = 'config-server-2.0.6.BUILD-SNAPSHOT.jar'
+def appName = 'discovery-server'
+def appPort = 8761
+def artifactName = 'discovery-server-2.0.6.BUILD-SNAPSHOT.jar'
 def  imageTag = "${appName}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
 //def tempBucket = "${project}-${appName}-${env.BUILD_NUMBER}"
 

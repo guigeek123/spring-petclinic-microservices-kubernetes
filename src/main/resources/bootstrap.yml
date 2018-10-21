@@ -1,15 +1,12 @@
-server.port: 8888
 spring:
   cloud:
     config:
-      server:
-        git:
-          uri: https://github.com/guigeek123/spring-petclinic-microservices-kubernetes-config
+      uri: http://localhost:8888
+  application:
+    name: discovery-server
 ---
 spring:
-  profiles: local
+  profiles: docker
   cloud:
     config:
-      server:
-        git:
-          uri: file:///${GIT_REPO}
+      uri: http://config-server:8888
