@@ -155,25 +155,12 @@ spec:
                     sh("sed -i.bak 's#projectName#${project}#' ./k8s/test/*.yaml")
                     sh("sed -i.bak 's#appPort#${appPort}#' ./k8s/app/*.yaml")
                     sh("sed -i.bak 's#appPort#${appPort}#' ./k8s/test/*.yaml")
-                    /*script {
-                        if ("${env.BRANCH_NAME}".contains('acceptance')) {
-                            sh("sed -i.bak 's#appName#${appName}-a#' ./k8s/test/*.yaml")
-                            testingdns = ${appName}-a
-                        }
 
-                        if ("${env.BRANCH_NAME}".contains('production')) {
-                            sh("sed -i.bak 's#appName#${appName}-p#' ./k8s/test/*.yaml")
-                            testingdns = ${appName}-a
-                        }
-                    }*/
-
-
-
-                    sh("cat k8s/app/deployment.yaml")
-                    sh("cat k8s/app/service.yaml")
-                    sh("cat k8s/test/deployment.yaml")
-                    sh("cat k8s/test/service.yaml")
-                    sh("cat k8s/test/internamespace-service.yaml")
+                    //sh("cat k8s/app/deployment.yaml")
+                    //sh("cat k8s/app/service.yaml")
+                    //sh("cat k8s/test/deployment.yaml")
+                    //sh("cat k8s/test/service.yaml")
+                    //sh("cat k8s/test/internamespace-service.yaml")
 
                     //Manage Nexus secret
                     // SECURITY WARNING : password displayed in jenkins Logs
@@ -358,7 +345,7 @@ spec:
                         withCredentials([string(credentialsId: 'defectdojo_apikey', variable: 'defectdojo_apikey')]) {
                             container('defectdojocli') {
                                 sh('pip install requests')
-                                sh("cd pipeline-tools/defectdojo/scripts/ && chmod +x dojo_ci_cd.py && ./dojo_ci_cd.py --host http://defectdojo:80 --api_key ${env.defectdojo_apikey} --build_id ${env.BUILD_NUMBER} --user admin --product ${project} --dir ../../../reports/")
+                                sh("cd pipeline-tools/defectdojo/scripts/ && chmod +x dojo_ci_cd.py && ./dojo_ci_cd.py --host http://defectdojo:80 --api_key ${env.defectdojo_apikey} --build_id ${env.BUILD_NUMBER} --user admin --product ${appName}_${project} --dir ../../../reports/")
                             }
                         }
 
@@ -420,19 +407,8 @@ spec:
 
             steps {
                 container('kubectl') {
-                    //Get node internal ip to access nexus docker registry exposed as nodePort (nexus-direct-nodeport.yaml) and replace it yaml file
-                    sh 'sed -i.bak \"s#NODEIP#$(kubectl get nodes -o jsonpath="{.items[1].status.addresses[?(@.type==\\"InternalIP\\")].address}")#\" ./k8s/production/*.yaml'
-                    //Write the image to be deployed in the yaml deployment file
-                    sh("sed -i.bak 's#CONTAINERNAME#${imageTag}#' ./k8s/production/*.yaml")
-                    //Personalizes the deployment file with application name
-                    sh("sed -i.bak 's#appName#${appName}#' ./k8s/production/*.yaml")
-                    sh("sed -i.bak 's#appName#${appName}#' ./k8s/services/frontend.yaml")
                     //Deploy application
-                    sh("kubectl --namespace=acceptance apply -f k8s/services/frontend.yaml")
-                    sh("kubectl --namespace=acceptance apply -f k8s/production/")
-                    //Display access
-                    // TODO : put back LoadBalancer deployment, and add a timer to wait for IP attribution
-                    //sh("echo http://`kubectl --namespace=production get service/${feSvcName} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'` > ${feSvcName}")
+                    sh("kubectl --namespace=acceptance apply -f k8s/app/*.yaml")
                 }
             }
         }
