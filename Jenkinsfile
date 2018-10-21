@@ -335,7 +335,7 @@ spec:
             when {
                 anyOf {
                     branch '*-acceptance';
-                    branch '*-production'
+                    //branch '*-production'
                 }
             }
             steps {
