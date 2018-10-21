@@ -39,7 +39,7 @@ public class VisitsServiceClient {
     private final RestTemplate loadBalancedRestTemplate;
 
     public Map<Integer, List<VisitDetails>> getVisitsForPets(final List<Integer> petIds) {
-        UriComponentsBuilder builder = fromHttpUrl("http://visits-service:8082/pets/visits")
+        UriComponentsBuilder builder = fromHttpUrl("http://visits-service/pets/visits")
             .queryParam("petId", joinIds(petIds));
 
         return loadBalancedRestTemplate.getForObject(builder.toUriString(), Visits.class)
