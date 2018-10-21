@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.samples.petclinic.discovery;
+package org.springframework.samples.petclinic.customers;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
-class DiscoveryServerApplicationTests {
+/**
+ * @author Maciej Szarlinski
+ */
+@EnableDiscoveryClient
+@SpringBootApplication
+public class CustomersServiceApplication {
 
-	@Test
-	void contextLoads() {
+	public static void main(String[] args) {
+		SpringApplication.run(CustomersServiceApplication.class, args);
 	}
-
 }
