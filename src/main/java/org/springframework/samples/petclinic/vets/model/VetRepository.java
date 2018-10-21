@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.samples.petclinic.visits.model;
-
-import java.util.List;
+package org.springframework.samples.petclinic.vets.model;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Repository class for <code>Visit</code> domain objects All method names are compliant with Spring Data naming conventions so this interface can easily be extended for Spring
- * Data See here: http://static.springsource.org/spring-data/jpa/docs/current/reference/html/jpa.repositories.html#jpa.query-methods.query-creation
+ * Repository class for <code>Vet</code> domain objects All method names are compliant with Spring Data naming
+ * conventions so this interface can easily be extended for Spring Data See here: http://static.springsource.org/spring-data/jpa/docs/current/reference/html/jpa.repositories.html#jpa.query-methods.query-creation
  *
  * @author Ken Krebs
  * @author Juergen Hoeller
@@ -29,9 +27,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author Michael Isvy
  * @author Maciej Szarlinski
  */
-public interface VisitRepository extends JpaRepository<Visit, Integer> {
-
-    List<Visit> findByPetId(int petId);
-
-    List<Visit> findByPetIdIn(Iterable<Integer> petIds);
+public interface VetRepository extends JpaRepository<Vet, Integer> {
 }

@@ -1,4 +1,16 @@
-INSERT IGNORE INTO visits VALUES (1, 7, '2010-03-04', 'rabies shot');
-INSERT IGNORE INTO visits VALUES (2, 8, '2011-03-04', 'rabies shot');
-INSERT IGNORE INTO visits VALUES (3, 8, '2009-06-04', 'neutered');
-INSERT IGNORE INTO visits VALUES (4, 7, '2008-09-04', 'spayed');
+INSERT IGNORE INTO vets VALUES (1, 'James', 'Carter');
+INSERT IGNORE INTO vets VALUES (2, 'Helen', 'Leary');
+INSERT IGNORE INTO vets VALUES (3, 'Linda', 'Douglas');
+INSERT IGNORE INTO vets VALUES (4, 'Rafael', 'Ortega');
+INSERT IGNORE INTO vets VALUES (5, 'Henry', 'Stevens');
+INSERT IGNORE INTO vets VALUES (6, 'Sharon', 'Jenkins');
+
+INSERT IGNORE INTO specialties VALUES (1, 'radiology');
+INSERT IGNORE INTO specialties VALUES (2, 'surgery');
+INSERT IGNORE INTO specialties VALUES (3, 'dentistry');
+
+INSERT IGNORE INTO vet_specialties VALUES (2, 1);
+INSERT IGNORE INTO vet_specialties VALUES (3, 2);
+INSERT IGNORE INTO vet_specialties VALUES (3, 3);
+INSERT IGNORE INTO vet_specialties VALUES (4, 2);
+INSERT IGNORE INTO vet_specialties VALUES (5, 1);

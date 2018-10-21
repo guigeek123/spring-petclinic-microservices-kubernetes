@@ -5,5 +5,7 @@ spring:
     schema: classpath*:db/hsqldb/schema.sql
     data: classpath*:db/hsqldb/data.sql
 
-logging.level.org.springframework: INFO
-
+vets:
+  cache:
+    ttl: 10
+    heap-size: 10
