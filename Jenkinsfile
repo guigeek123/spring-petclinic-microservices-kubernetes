@@ -142,14 +142,18 @@ spec:
                     sh 'cp ./k8s/app/* k8s/test/'
 
                     //Get node internal ip to access nexus docker registry exposed as nodePort (nexus-direct-nodeport.yaml) and replace it yaml file
-                    sh 'sed -i.bak \"s#NODEIP#$(kubectl get nodes -o jsonpath="{.items[1].status.addresses[?(@.type==\\"InternalIP\\")].address}")#\" ./k8s/*.yaml'
+                    sh 'sed -i.bak \"s#NODEIP#$(kubectl get nodes -o jsonpath="{.items[1].status.addresses[?(@.type==\\"InternalIP\\")].address}")#\" ./k8s/app/*.yaml'
+                    sh 'sed -i.bak \"s#NODEIP#$(kubectl get nodes -o jsonpath="{.items[1].status.addresses[?(@.type==\\"InternalIP\\")].address}")#\" ./k8s/test/*.yaml'
                     //Write the image to be deployed in the yaml deployment file
-                    sh("sed -i.bak 's#CONTAINERNAME#${imageTag}#' ./k8s/*.yaml")
+                    sh("sed -i.bak 's#CONTAINERNAME#${imageTag}#' ./k8s/app/*.yaml")
+                    sh("sed -i.bak 's#CONTAINERNAME#${imageTag}#' ./k8s/test/*.yaml")
                     //Personalizes the deployment file with application name
                     sh("sed -i.bak 's#appName#${appName}#' ./k8s/app/*.yaml")
                     sh("sed -i.bak 's#appName#${appName}-${env.BRANCH_NAME}#' ./k8s/test/*.yaml")
-                    sh("sed -i.bak 's#projectName#${project}#' ./k8s/*.yaml")
-                    sh("sed -i.bak 's#appPort#${appPort}#' ./k8s/*.yaml")
+                    sh("sed -i.bak 's#projectName#${project}#' ./k8s/app/*.yaml")
+                    sh("sed -i.bak 's#projectName#${project}#' ./k8s/test/*.yaml")
+                    sh("sed -i.bak 's#appPort#${appPort}#' ./k8s/app/*.yaml")
+                    sh("sed -i.bak 's#appPort#${appPort}#' ./k8s/test/*.yaml")
 
                     sh("cat k8s/app/deployment.yaml")
                     sh("cat k8s/app/service.yaml")
